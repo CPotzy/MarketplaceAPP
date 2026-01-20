@@ -1,79 +1,102 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# FB Marketplace App - Android
 
-# Getting Started
+A custom Android app for browsing Facebook Marketplace with advanced features like favorites, price tracking, and search functionality.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## ✅ Features Implemented
 
-## Step 1: Start the Metro Server
+### Core Functionality
+- ✅ **Marketplace WebView** - Browse Facebook Marketplace with full functionality
+- ✅ **URL Filtering** - Blocks non-Marketplace Facebook content (Stories, Feed, etc.)
+- ✅ **Messenger Integration** - Opens Messenger app for conversations
+- ✅ **Bottom Tab Navigation** - 5 tabs: Home, Search, Favorites, Track, Messages
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+### Advanced Features
+- ✅ **Favorites Management**
+  - Save unlimited items
+  - Organize in folders
+  - View/remove saved items
+  - Track availability status
+  
+- ✅ **Price Tracking**
+  - Track up to 100 items
+  - Price history tracking
+  - Price change notifications (up/down indicators)
+  - Set price alerts
+  
+- ✅ **Search** 
+  - Quick search interface
+  - Price range filtering
+  - Location search
+  - Quick search categories
 
-To start Metro, run the following command from the _root_ of your React Native project:
+- ✅ **Floating Action Button (FAB)**
+  - Save current item to favorites
+  - Add to price tracking
+  - Share items
+
+### Technical Implementation
+- ✅ SQLite database for local storage
+- ✅ AsyncStorage for app settings
+- ✅ TypeScript throughout
+- ✅ Galaxy S25 Ultra optimizations
+- ✅ Material Design UI
+
+## 🚀 Building the APK
+
+### Prerequisites
+- Node.js 18+
+- Android SDK
+- JDK 11+
+
+### Run in Development Mode
 
 ```bash
-# using npm
-npm start
+# Start Metro bundler
+npx react-native start
 
-# OR using Yarn
-yarn start
+# In another terminal, run on device/emulator
+npx react-native run-android
 ```
 
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
+### Build APK
 
 ```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
+cd android
+./gradlew assembleDebug
 ```
 
-### For iOS
+APK location: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+### Install on Device
 
 ```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+adb install android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+## 📱 Usage
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+1. **Browse Marketplace**: App opens directly to Facebook Marketplace
+2. **Save Favorites**: Tap + button → ⭐ Save
+3. **Track Prices**: Tap + button → 📊 Track  
+4. **Message Sellers**: Tap message → Opens Messenger app
 
-## Step 3: Modifying your App
+## ⚙️ Configuration
 
-Now that you have successfully run the app, let's modify it.
+Project location: `/Users/calebpotter/Facebook marketplace/Facebook Marketplace Android/MarketplaceApp`
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+## 🐛 Troubleshooting
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+If build fails:
+```bash
+cd android
+./gradlew clean
+npx react-native start --reset-cache
+```
 
-## Congratulations! :tada:
+## ⚖️ Legal Notice
 
-You've successfully run and modified your React Native App. :partying_face:
+Unofficial app not affiliated with Facebook/Meta. For personal use only.
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Built for Galaxy S25 Ultra

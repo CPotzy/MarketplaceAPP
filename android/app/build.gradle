@@ -83,7 +83,29 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
+        
+        // Galaxy S25 Ultra optimizations
+        resConfigs "en"
+        vectorDrawables.useSupportLibrary = true
+    }
+    
+    splits {
+        density {
+            enable false
+        }
+        abi {
+            enable true
+            reset()
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            universalApk true
+        }
+    }
+    
+    // Enable Java 8+ features
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     signingConfigs {
         debug {
@@ -102,8 +124,16 @@ android {
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+    
+    packagingOptions {
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
     }
 }
 
