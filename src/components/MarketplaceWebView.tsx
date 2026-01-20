@@ -30,6 +30,9 @@ const BLOCKED_PATTERNS = [
   '/events',
   '/pages',
   '/fundraisers',
+  '/?sk=h_chr', // Home feed
+  '/home.php', // Home page
+  '/?sk=', // Any Facebook feed variation
 ];
 
 export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
@@ -76,11 +79,29 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
             /* Hide bottom navigation */
             [data-pagelet="MobileNavBar"] { display: none !important; }
             
-            /* Hide "Open in app" banner */
+            /* Hide "Open in app" banner and buttons */
             [data-sigil="m-promo-jewel-header"] { display: none !important; }
+            [data-sigil="m_login_upsell"] { display: none !important; }
+            [data-sigil="app-upsell"] { display: none !important; }
+            a[href*="fb://"], a[href*="facebook://"] { display: none !important; }
+            
+            /* Hide any "Open in Facebook app" buttons */
+            a[href*="/app_download"], 
+            a[href*="/mobile/app_download"],
+            a[href*="/fbapp/"],
+            button:has-text("Open"),
+            div:has-text("Open in Facebook") { display: none !important; }
             
             /* Hide stories */
             [data-sigil="m-story-tray"] { display: none !important; }
+            
+            /* Hide Home feed content - keep only Marketplace */
+            [data-pagelet="FeedUnit"] { display: none !important; }
+            [data-pagelet="Stories"] { display: none !important; }
+            
+            /* Hide floating action buttons at bottom */
+            [role="complementary"] { display: none !important; }
+            ._5m_v { display: none !important; }
             
             /* Add padding to top since we removed header */
             body { padding-top: 0 !important; }
@@ -158,6 +179,38 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
         }, true);
       }
       
+      // Intercept all link clicks to prevent external browser opening
+      function preventExternalLinks() {
+        document.addEventListener('click', function(e) {
+          let target = e.target;
+          
+          // Find closest anchor tag
+          while (target && target.tagName !== 'A') {
+            target = target.parentElement;
+          }
+          
+          if (target && target.tagName === 'A') {
+            const href = target.getAttribute('href');
+            
+            // If link tries to open externally or is not Facebook, prevent it
+            if (href && (
+              target.getAttribute('target') === '_blank' ||
+              (!href.includes('facebook.com') && !href.startsWith('/'))
+            )) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // If it's a Facebook link, navigate within WebView
+              if (href.includes('facebook.com') || href.startsWith('/')) {
+                window.location.href = href;
+              }
+              
+              return false;
+            }
+          }
+        }, true);
+      }
+      
       // Send data back to React Native
       function sendDataToApp() {
         const data = extractItemData();
@@ -172,6 +225,7 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
       // Initialize - hide distractions immediately
       hideDistractions();
       detectMessageButton();
+      preventExternalLinks();
       
       // Extract data on page load
       if (document.readyState === 'complete') {
@@ -367,6 +421,10 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
             style.innerHTML = \`
               [role="banner"], #header { display: none !important; }
               [data-pagelet="MobileNavBar"] { display: none !important; }
+              [data-sigil="m-promo-jewel-header"] { display: none !important; }
+              [data-sigil="app-upsell"] { display: none !important; }
+              a[href*="fb://"], a[href*="facebook://"] { display: none !important; }
+              [role="complementary"] { display: none !important; }
             \`;
             document.head.appendChild(style);
           });

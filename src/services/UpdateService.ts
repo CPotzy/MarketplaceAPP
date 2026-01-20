@@ -6,7 +6,7 @@ const { ApkInstaller } = NativeModules;
 // GitHub repository details
 const GITHUB_OWNER = 'CPotzy'; // Your GitHub username
 const GITHUB_REPO = 'MarketplaceAPP'; // Your repository name
-const CURRENT_VERSION = '1.0.2'; // Update this with each release
+const CURRENT_VERSION = '1.0.3'; // Update this with each release
 
 interface GitHubRelease {
   tag_name: string;
