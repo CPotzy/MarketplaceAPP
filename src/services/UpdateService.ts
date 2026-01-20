@@ -1,10 +1,12 @@
-import { Alert, Linking, Platform, ToastAndroid } from 'react-native';
+import { Alert, Linking, Platform, ToastAndroid, NativeModules } from 'react-native';
 import RNFS from 'react-native-fs';
+
+const { ApkInstaller } = NativeModules;
 
 // GitHub repository details
 const GITHUB_OWNER = 'CPotzy'; // Your GitHub username
 const GITHUB_REPO = 'MarketplaceAPP'; // Your repository name
-const CURRENT_VERSION = '1.0.1'; // Update this with each release
+const CURRENT_VERSION = '1.0.2'; // Update this with each release
 
 interface GitHubRelease {
   tag_name: string;
@@ -174,49 +176,17 @@ export class UpdateService {
     }
 
     try {
-      // Try different methods to install
-      const fileUri = `file://${filePath}`;
+      ToastAndroid.show('Opening installer...', ToastAndroid.SHORT);
       
-      // Method 1: Try direct file URI (works on older Android)
-      try {
-        const canOpen = await Linking.canOpenURL(fileUri);
-        if (canOpen) {
-          await Linking.openURL(fileUri);
-          return;
-        }
-      } catch (e) {
-        console.log('Method 1 failed, trying content URI...');
-      }
-
-      // Method 2: Use content:// URI (for Android 10+)
-      try {
-        const contentUri = `content://com.marketplaceapp.fileprovider/${filePath}`;
-        await Linking.openURL(contentUri);
-        return;
-      } catch (e) {
-        console.log('Method 2 failed, showing manual instructions...');
-      }
-
-      // Fallback: Show manual installation instructions
-      Alert.alert(
-        'Installation Ready',
-        `The update has been downloaded to your Downloads folder.\n\nTo install:\n1. Open your Downloads folder\n2. Tap on "${fileName}"\n3. Follow the installation prompts`,
-        [
-          { text: 'OK' },
-          {
-            text: 'Open Downloads',
-            onPress: () => {
-              // Try to open Downloads folder
-              Linking.openURL('content://com.android.externalstorage.documents/document/primary:Download');
-            }
-          }
-        ]
-      );
+      // Use our custom native module to install the APK
+      await ApkInstaller.install(filePath);
+      console.log('APK installation started successfully');
+      
     } catch (error) {
       console.error('Error installing APK:', error);
       Alert.alert(
         'Installation',
-        `Please open your Downloads folder and tap "${fileName}" to install the update.`,
+        `Could not auto-install. Please open your Downloads folder and tap "${fileName}" to install the update manually.`,
         [{ text: 'OK' }]
       );
     }
