@@ -4,7 +4,7 @@ import RNFS from 'react-native-fs';
 // GitHub repository details
 const GITHUB_OWNER = 'CPotzy'; // Your GitHub username
 const GITHUB_REPO = 'MarketplaceAPP'; // Your repository name
-const CURRENT_VERSION = '1.0.0'; // Update this with each release
+const CURRENT_VERSION = '1.0.1'; // Update this with each release
 
 interface GitHubRelease {
   tag_name: string;

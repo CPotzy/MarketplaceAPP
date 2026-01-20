@@ -42,6 +42,56 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
   // JavaScript code to inject into the WebView
   const injectedJavaScript = `
     (function() {
+      // Hide Facebook navigation bar and other distracting elements
+      function hideDistractions() {
+        try {
+          // Hide top navigation bar
+          const topNav = document.querySelector('[role="banner"]');
+          if (topNav) {
+            topNav.style.display = 'none';
+          }
+          
+          // Hide navigation tabs (Home, Watch, etc.)
+          const navTabs = document.querySelectorAll('[role="navigation"], [role="tablist"]');
+          navTabs.forEach(nav => {
+            // Only hide if it contains non-marketplace links
+            const text = nav.innerText || '';
+            if (text.includes('Home') || text.includes('Watch') || text.includes('Groups')) {
+              nav.style.display = 'none';
+            }
+          });
+          
+          // Hide bottom navigation bar on mobile
+          const bottomNav = document.querySelector('[data-pagelet="MobileNavBar"]');
+          if (bottomNav) {
+            bottomNav.style.display = 'none';
+          }
+          
+          // Add custom CSS to hide more elements
+          const style = document.createElement('style');
+          style.innerHTML = \`
+            /* Hide Facebook app header */
+            #header, [role="banner"] { display: none !important; }
+            
+            /* Hide bottom navigation */
+            [data-pagelet="MobileNavBar"] { display: none !important; }
+            
+            /* Hide "Open in app" banner */
+            [data-sigil="m-promo-jewel-header"] { display: none !important; }
+            
+            /* Hide stories */
+            [data-sigil="m-story-tray"] { display: none !important; }
+            
+            /* Add padding to top since we removed header */
+            body { padding-top: 0 !important; }
+            #root { padding-top: 0 !important; }
+          \`;
+          document.head.appendChild(style);
+        } catch (error) {
+          console.error('Error hiding distractions:', error);
+        }
+      }
+      
       // Function to extract item data from the page
       function extractItemData() {
         try {
@@ -119,14 +169,18 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
         }
       }
       
-      // Initialize
+      // Initialize - hide distractions immediately
+      hideDistractions();
       detectMessageButton();
       
       // Extract data on page load
       if (document.readyState === 'complete') {
         sendDataToApp();
       } else {
-        window.addEventListener('load', sendDataToApp);
+        window.addEventListener('load', function() {
+          sendDataToApp();
+          hideDistractions(); // Hide again after load
+        });
       }
       
       // Also listen for URL changes (for SPAs)
@@ -135,9 +189,15 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
         const currentUrl = location.href;
         if (currentUrl !== lastUrl) {
           lastUrl = currentUrl;
-          setTimeout(sendDataToApp, 1000);
+          setTimeout(function() {
+            sendDataToApp();
+            hideDistractions(); // Hide distractions on page change
+          }, 500);
         }
       }).observe(document, { subtree: true, childList: true });
+      
+      // Re-hide distractions periodically in case Facebook re-adds them
+      setInterval(hideDistractions, 2000);
       
       true; // Required for Android
     })();
@@ -148,18 +208,26 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
     const { url } = request;
     console.log('Should start load:', url);
 
-    // Always allow facebook.com and fbcdn.net domains (for resources)
-    if (url.includes('facebook.com') || url.includes('fbcdn.net') || url.includes('fbsbx.com')) {
+    // Always allow facebook.com, fbcdn.net, and related domains
+    if (url.includes('facebook.com') || 
+        url.includes('fbcdn.net') || 
+        url.includes('fbsbx.com') ||
+        url.includes('fb.com') ||
+        url.startsWith('about:') ||
+        url.startsWith('data:')) {
+      
       // Check if URL should be blocked (non-marketplace FB features)
       const shouldBlock = BLOCKED_PATTERNS.some(pattern => url.includes(pattern));
       
       if (shouldBlock) {
         console.log('Blocking non-marketplace URL:', url);
         // Redirect back to marketplace
-        webViewRef.current?.injectJavaScript(`
-          window.location.href = '${MARKETPLACE_URL}';
-          true;
-        `);
+        setTimeout(() => {
+          webViewRef.current?.injectJavaScript(`
+            window.location.href = '${MARKETPLACE_URL}';
+            true;
+          `);
+        }, 100);
         return false;
       }
       
@@ -274,16 +342,36 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = ({
           const { nativeEvent } = syntheticEvent;
           console.log('Load ended:', nativeEvent.url);
           setLoading(false);
+          
+          // Re-inject JavaScript to hide elements after page loads
+          webViewRef.current?.injectJavaScript(injectedJavaScript);
         }}
         onLoadProgress={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.log('Load progress:', nativeEvent.progress);
+          
+          // Hide loading overlay when 80% loaded
+          if (nativeEvent.progress > 0.8) {
+            setLoading(false);
+          }
         }}
         onError={handleError}
         onHttpError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.error('HTTP error:', nativeEvent);
         }}
+        injectedJavaScriptBeforeContentLoaded={`
+          // Inject early to hide elements before they render
+          window.addEventListener('DOMContentLoaded', function() {
+            const style = document.createElement('style');
+            style.innerHTML = \`
+              [role="banner"], #header { display: none !important; }
+              [data-pagelet="MobileNavBar"] { display: none !important; }
+            \`;
+            document.head.appendChild(style);
+          });
+          true;
+        `}
         injectedJavaScript={injectedJavaScript}
         javaScriptEnabled={true}
         domStorageEnabled={true}
